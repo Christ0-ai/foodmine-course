@@ -25,4 +25,9 @@ export class FoodService {
   getAllFoodsByTag(tag: string): Food[]{
     return tag == "All" ? this.getAll() : this.getAll().filter(food => food.tags?.includes(tag))
   }
+
+  getFoodById(foodId: string): Food{
+    // si il y'a pas d'aliment définie alors on retourne un aliment vide
+    return this.getAll().find(food => food.id == foodId) ?? new Food()
+  }
 }
