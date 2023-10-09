@@ -7,6 +7,7 @@ import { CartItem } from '../shared/models/CartItem';
 @Injectable({
   providedIn: 'root'
 })
+
 export class CartService {
   private cart:Cart = this.getCartFromLocalStorage()
   private cartSubject: BehaviorSubject<Cart> = new BehaviorSubject(this.cart);
