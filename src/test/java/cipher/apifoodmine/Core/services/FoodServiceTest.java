@@ -1,14 +1,13 @@
 package cipher.apifoodmine.Core.services;
 
-import ch.qos.logback.core.net.SyslogOutputStream;
 import cipher.apifoodmine.models.dao.FoodDAO;
 import cipher.apifoodmine.models.dao.TagDAO;
 import cipher.apifoodmine.models.dto.Food;
 import cipher.apifoodmine.repositories.FoodRepository;
 import cipher.apifoodmine.services.FoodService;
-import org.aspectj.lang.annotation.Before;
+import jakarta.persistence.EntityNotFoundException;
+import org.assertj.core.api.ThrowableAssert;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -18,6 +17,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -58,34 +59,35 @@ public class FoodServiceTest {
         foods.add(burger);
     }
 
+    /* ON VERIFIE SI LE SERVICE APPEL LE REPOSITORY */
     @Test
-    void should_find_all_food(){
-
-        // GIVEN
-        when(foodService.getFoods()).thenReturn(foods);
+    void should_call_repository_when_findAll(){
 
         // WHEN
-        List<FoodDAO> foods = foodService.getFoods();
+        foodService.getFoods();
 
         // THEN
-        assertThat(foods).isNotNull();
+        verify(foodRepository).findAll();
     }
 
+    /* ON VERIFIE SI L'ID PASSE EN PARAMETRE EST EGAL A CELUI QU'ON RECUPERE VIA LE REPO */
     @Test
     void should_find_food_by_id(){
 
         Food foodFromListDAO = new Food(foods.get(1));
         String foodId = "6523cb6a11ab667c9baedacd";
+
         // GIVEN
-        when(foodService.getFoodById(foodId)).thenReturn(foodFromListDAO);
+        when(foodRepository.findById(foodId)).thenReturn(Optional.ofNullable(foods.get(1)));
 
         // WHEN
-         Food food = foodService.getFoodById(foodId);
+        Food food = foodService.getFoodById(foodId);
 
         // THEN
-        assertThat(food).isNotNull();
+        assertThat(food.getId()).isEqualTo(foodFromListDAO.getId());
     }
 
+    /* ON VERIFIE SI ON RECUPERE UNE LISTE LORSQU'ON APPELLE LE REPOSITORY */
     @Test
     void should_find_all_food_when_call_repository(){
 
@@ -96,19 +98,21 @@ public class FoodServiceTest {
         List<FoodDAO> foods = foodService.getFoods();
 
         // THEN
-        assertThat(foods).isNotNull();
+        assertThat(foods.isEmpty()).isFalse();
     }
+
+    /* ON VERIFIE QU'UNE EXCEPTION SE MANIFESTE SI FOOD N'EXISTE PAS */
 
     @Test
-    void should_find_food_by_id_when_call_repository(){
+    void should_throw_EntityNotFoundException_if_food_is_null(){
 
-        //GIVEN
-        when(foodRepository.findById("6523cb6a11ab667c9baedacd")).thenReturn(Optional.ofNullable(foods.get(1)));
+        String foodId = "6523cb6a11ab667c9baedacd";
 
-        //WHEN
-        Food food = foodService.getFoodById("6523cb6a11ab667c9baedacd");
+        // GIVEN
+        when(foodRepository.findById(foodId)).thenReturn(Optional.empty());
 
-        //THEN
-        assertThat(food.getName()).isEqualTo("burger");
+        // WHEN & THEN
+        assertThrows(EntityNotFoundException.class, () -> {foodService.getFoodById(foodId);});
     }
+
 }

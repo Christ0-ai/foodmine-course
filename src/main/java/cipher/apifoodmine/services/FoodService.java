@@ -31,6 +31,4 @@ public class FoodService implements IFoodService{
         FoodDAO foodDAO = this.foodRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Aucun food n'existe avec cet id"));
         return new Food(foodDAO);
     }
-
-
 }
