@@ -107,7 +107,6 @@ public class FoodServiceTest {
     void should_throw_EntityNotFoundException_if_food_is_null(){
 
         String foodId = "6523cb6a11ab667c9baedacd";
-
         // GIVEN
         when(foodRepository.findById(foodId)).thenReturn(Optional.empty());
 
